@@ -25,19 +25,22 @@
                 <div class="col-sm-12">
                     <p>Many things are desirable, but not all of them are essential characteristics of democracy. Please tell me for each of the following things how essential you think it is as a characteristic of democracy. Use this scale where 1 means “not at all an essential characteristic of democracy” and 10 means it definitely is “an essential characteristic of democracy”:</p>
                     <script>
-                      var questions = [{title: "Governments tax the rich and subsidize the poor.", values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]},
-                                        {title: "Religious authorities ultimately interpret the laws.", values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]},
-                                        {title: "People choose their leaders in free elections.", values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]},
-                                        {title: "People choose their leaders in free elections.", values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}]
+                      var scaleOneToTen = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Prefer not to say"];
+                      var questions = [{title: "Governments tax the rich and subsidize the poor.", values: scaleOneToTen, percents: [15.3, 5.8, 7.2, 7.2, 22.1, 10.2, 11.3, 7.0, 3.9, 6.9, 3.0, ]},
+                                        {title: "Religious authorities ultimately interpret the laws.", values: scaleOneToTen},
+                                        {title: "People choose their leaders in free elections.", values: scaleOneToTen},
+                                        {title: "People choose their leaders in free elections.", values: [1, 2, 3, 4, 5]}];
+                      var waitingForOption = false;
+                      var phase = "question";
                       var questionNumber = 0;
-                      d3.selectAll(".col-sm-12")
+                      var question = d3.selectAll(".col-sm-12")
                         .append("p")
                         .attr("class", "questionTopic")
                         .text(questions[questionNumber].title);
                       d3.selectAll(".col-sm-12")
                         .append("form")
                         .attr("action", "submit")
-                      d3.selectAll("form").selectAll(".radio")
+                      var inputRadios = d3.selectAll("form").selectAll(".radio")
                         .data(questions[questionNumber].values)
                         .enter()
                         .append("div")
@@ -46,13 +49,62 @@
                         .append("input")
                         .attr("type", "radio")
                         .attr("name", "ques")
+                        .attr("value", function(d){ return d })
+                      d3.selectAll("label")
+                        .data(questions[questionNumber].values)
+                        .append("text")
                         .text(function(d){ return d });
-                      d3.selectAll(".col-sm-12")
+                      var submitButton = d3.selectAll(".col-sm-12")
                         .append("input")
                         .attr("type", "button")
                         .attr("class", "btn btn-success")
                         .attr("value", "Submit");
-                      questionNumber += 1;
+                      var instructionText = d3.selectAll(".col-sm-12")
+                        .append("div")
+                        .append("text");
+                        
+                      inputRadios.on("click", function() {
+                        if(waitingForOption){
+                          instructionText.text("");
+                          waitingForOption = false;
+                        }
+                      });
+                      
+                      submitButton.on("click", function() {
+                            if(d3.select('input[name="ques"]:checked').node() != null){
+                                if(questionNumber < questions.length - 1){
+                                  questionNumber += 1;
+                                  question.text(questions[questionNumber].title);
+                                  d3.select("form").selectAll("*").remove();
+                                  inputRadios = d3.selectAll("form").selectAll(".radio")
+                                    .data(questions[questionNumber].values)
+                                    .enter()
+                                    .append("div")
+                                    .attr("class", "radio")
+                                    .append("label")
+                                    .append("input")
+                                    .attr("type", "radio")
+                                    .attr("name", "ques")
+                                    .attr("value", function(d){ return d })
+                                  d3.selectAll("label")
+                                    .data(questions[questionNumber].values)
+                                    .append("text")
+                                    .text(function(d){ return d });
+                                  inputRadios.on("click", function() {
+                                    if(waitingForOption){
+                                      instructionText.text("");
+                                      waitingForOption = false;
+                                    }
+                                  });
+                                } else if (questionNumber != "Done") {
+                                  instructionText.text("All questions complete!");
+                                  questionNumber = "Done";
+                                }
+                            } else {
+                                instructionText.text("You must select an option")
+                                waitingForOption = true;
+                            }
+                        });
                     </script>
                     <!-- <p>Governments tax the rich and subsidize the poor.</p>
                     <form action="/action_page.php">
