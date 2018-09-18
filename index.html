@@ -8,7 +8,7 @@
         <script src="scripts/bootstrap.js"></script>
         <link rel="stylesheet" href="css/bootstrap.css">
         <link rel="stylesheet" href="css/options.css">
-        <link rel="stylesheet" type="text/css" href="css/survey.css?ts=<?=time()?>" /> 
+        <link rel="stylesheet" type="text/css" href="css/survey.css" />  <!-- ?ts=<?=time()?> -->
     </head>
     <body>
       <body>
@@ -25,14 +25,21 @@
                 <div class="col-sm-12">
                     <p>Many things are desirable, but not all of them are essential characteristics of democracy. Please tell me for each of the following things how essential you think it is as a characteristic of democracy. Use this scale where 1 means “not at all an essential characteristic of democracy” and 10 means it definitely is “an essential characteristic of democracy”:</p>
                     <script>
-                      var scaleOneToTen = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Prefer not to say"];
-                      var questions = [{title: "Governments tax the rich and subsidize the poor.", values: scaleOneToTen, percents: [15.3, 5.8, 7.2, 7.2, 22.1, 10.2, 11.3, 7.0, 3.9, 6.9, 3.0, ]},
-                                        {title: "Religious authorities ultimately interpret the laws.", values: scaleOneToTen},
-                                        {title: "People choose their leaders in free elections.", values: scaleOneToTen},
-                                        {title: "People choose their leaders in free elections.", values: [1, 2, 3, 4, 5]}];
+                      var scaleOneToTen = ["1 - Not essential", "2", "3", "4", "5", "6", "7", "8", "9", "10 - Essential", "No answer"];
+                      var questions = [{title: "Governments tax the rich and subsidize the poor.", values: scaleOneToTen, percents: [15.3, 5.8, 7.2, 7.2, 22.1, 10.2, 11.3, 7.0, 3.9, 6.9, 3.0]},
+                                        {title: "Religious authorities ultimately interpret the laws.", values: scaleOneToTen, percents: [40.2, 10.7, 7.7, 6.7, 18.3, 5.5, 3.0, 1.9, 1.1, 1.9, 3.0]},
+                                        {title: "People choose their leaders in free elections.", values: scaleOneToTen, percents: [2.1, 1.0, 1.5, 2.0, 11.9, 4.2, 4.5, 7.7, 8.9, 53.2, 3.0]}];
                       var waitingForOption = false;
-                      var phase = "question";
+                      var phase = "submit";
                       var questionNumber = 0;
+                      var submitButton, inputRadios, instructionText, svgs;
+                      var xScale;
+                      var colors = d3.schemePaired;
+                      
+                      var w = 550;
+                      var h = 20;
+                      var rightPadding = 50;
+                      
                       var question = d3.selectAll(".col-sm-12")
                         .append("p")
                         .attr("class", "questionTopic")
@@ -40,71 +47,108 @@
                       d3.selectAll(".col-sm-12")
                         .append("form")
                         .attr("action", "submit")
-                      var inputRadios = d3.selectAll("form").selectAll(".radio")
-                        .data(questions[questionNumber].values)
-                        .enter()
-                        .append("div")
-                        .attr("class", "radio")
-                        .append("label")
-                        .append("input")
-                        .attr("type", "radio")
-                        .attr("name", "ques")
-                        .attr("value", function(d){ return d })
-                      d3.selectAll("label")
-                        .data(questions[questionNumber].values)
-                        .append("text")
-                        .text(function(d){ return d });
-                      var submitButton = d3.selectAll(".col-sm-12")
+                        
+                      var createInput = function(){
+                          xScale = d3.scaleLinear()
+                           .domain([0, d3.max(questions[questionNumber].percents)])
+                           .range([0, w - rightPadding]);
+                         
+                          inputRadios = d3.selectAll("form").selectAll(".radio")
+                            .data(questions[questionNumber].values)
+                            .enter()
+                            .append("div")
+                            .attr("class", "radio-outer")
+                            .append("div")
+                            .attr("class", "radio")
+                            .append("label")
+                            .append("input")
+                            .attr("type", "radio")
+                            .attr("name", "ques")
+                            .attr("value", function(d){ return d })
+                          d3.selectAll("label")
+                            .data(questions[questionNumber].values)
+                            .append("text")
+                            .text(function(d){ return d });
+                          svgs = d3.selectAll("div.radio-outer")
+                            .data(questions[questionNumber].percents)
+                            .append("div")
+                            .attr("class", "svg-holder")
+                            .append("svg")
+                            .attr("width", w)
+                            .attr("height", h)
+                            
+                          inputRadios.on("click", function() {
+                            if(waitingForOption){
+                              instructionText.text("");
+                              waitingForOption = false;
+                            }
+                          });
+                      }
+                      
+                      createInput();
+                      
+                      submitButton = d3.selectAll(".col-sm-12")
                         .append("input")
                         .attr("type", "button")
                         .attr("class", "btn btn-success")
-                        .attr("value", "Submit");
-                      var instructionText = d3.selectAll(".col-sm-12")
+                        .attr("value", "Submit")
+                        .attr("style", "margin-top: 10px");
+                      instructionText = d3.selectAll(".col-sm-12")
                         .append("div")
                         .append("text");
-                        
-                      inputRadios.on("click", function() {
-                        if(waitingForOption){
-                          instructionText.text("");
-                          waitingForOption = false;
-                        }
-                      });
                       
                       submitButton.on("click", function() {
-                            if(d3.select('input[name="ques"]:checked').node() != null){
-                                if(questionNumber < questions.length - 1){
+                          if (phase == "next") {
+                              if(questionNumber < questions.length - 1){
                                   questionNumber += 1;
                                   question.text(questions[questionNumber].title);
                                   d3.select("form").selectAll("*").remove();
-                                  inputRadios = d3.selectAll("form").selectAll(".radio")
-                                    .data(questions[questionNumber].values)
-                                    .enter()
-                                    .append("div")
-                                    .attr("class", "radio")
-                                    .append("label")
-                                    .append("input")
-                                    .attr("type", "radio")
-                                    .attr("name", "ques")
-                                    .attr("value", function(d){ return d })
-                                  d3.selectAll("label")
-                                    .data(questions[questionNumber].values)
-                                    .append("text")
-                                    .text(function(d){ return d });
-                                  inputRadios.on("click", function() {
-                                    if(waitingForOption){
-                                      instructionText.text("");
-                                      waitingForOption = false;
-                                    }
-                                  });
-                                } else if (questionNumber != "Done") {
-                                  instructionText.text("All questions complete!");
-                                  questionNumber = "Done";
-                                }
-                            } else {
-                                instructionText.text("You must select an option")
-                                waitingForOption = true;
-                            }
-                        });
+                                  createInput();
+                                  submitButton.attr("value", "Submit");
+                                  phase = "submit";
+                              } else if (questionNumber != "Done") {
+                                instructionText.text("All questions complete!");
+                                questionNumber = "Done";
+                              }
+                          } else if (d3.select('input[name="ques"]:checked').node() != null && phase == "submit"){
+                              submitButton.attr("value", "Next");
+                              phase = "next";
+                              $(':radio:not(:checked)').attr('disabled', true);
+                              svgs.append("rect")
+                                .attr("class", "lowerBar")
+                                .attr("x", function() { return 0})
+                                .attr("y", function() { return 0})
+                                .attr("width", function(d) { return 0 })
+                                .attr("height", function() { return h})
+                                .attr("fill", function(d, i) {
+                                  return colors[i];
+                                })
+                                .transition()
+                                .duration(1000)
+                                .ease(d3.easeCubicInOut)
+                                .attr("width", function(d) { return xScale(d) });
+                              svgs.append("text")
+                                .text(function(d) {
+                                    return d.toString() + "%";
+                                })
+                                .attr("x", function(d) {
+                                    return 0;
+                                })
+                                .attr("y", function(d) {
+                                    return h/2 + 6;
+                                })
+                                .attr("font-family", "sans-serif")
+                                .attr("font-size", "12px")
+                                .attr("text-anchor", "middle")
+                                .transition()
+                                .duration(1000)
+                                .ease(d3.easeCubicInOut)
+                                .attr("x", function(d) { return xScale(d) + (rightPadding / 2)});
+                          } else if (phase == "submit") {
+                              instructionText.text("You must select an option")
+                              waitingForOption = true;
+                          }
+                      });
                     </script>
                     <!-- <p>Governments tax the rich and subsidize the poor.</p>
                     <form action="/action_page.php">
