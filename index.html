@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Surveys</title>
+        <script type="text/javascript" src="d3/d3.js"></script>
+        <script src="scripts/jquery.js"></script>
+        <script src="scripts/bootstrap.js"></script>
+        <link rel="stylesheet" href="css/bootstrap.css">
+        <link rel="stylesheet" href="css/options.css">
+        <link rel="stylesheet" type="text/css" href="css/survey.css?ts=<?=time()?>" /> 
+    </head>
+    <body>
+      <body>
+        <div class="container-fluid docs" style="margin:20px">
+            <div class="row">
+                <div class="page-header">
+                    <h1>
+                        World Value Survey Demo
+                    </h1>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <p>Many things are desirable, but not all of them are essential characteristics of democracy. Please tell me for each of the following things how essential you think it is as a characteristic of democracy. Use this scale where 1 means “not at all an essential characteristic of democracy” and 10 means it definitely is “an essential characteristic of democracy”:</p>
+                    <script>
+                      var questions = [{title: "Governments tax the rich and subsidize the poor.", values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]},
+                                        {title: "Religious authorities ultimately interpret the laws.", values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]},
+                                        {title: "People choose their leaders in free elections.", values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]},
+                                        {title: "People choose their leaders in free elections.", values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}]
+                      var questionNumber = 0;
+                      d3.selectAll(".col-sm-12")
+                        .append("p")
+                        .attr("class", "questionTopic")
+                        .text(questions[questionNumber].title);
+                      d3.selectAll(".col-sm-12")
+                        .append("form")
+                        .attr("action", "submit")
+                      d3.selectAll("form").selectAll(".radio")
+                        .data(questions[questionNumber].values)
+                        .enter()
+                        .append("div")
+                        .attr("class", "radio")
+                        .append("label")
+                        .append("input")
+                        .attr("type", "radio")
+                        .attr("name", "ques")
+                        .text(function(d){ return d });
+                      d3.selectAll(".col-sm-12")
+                        .append("input")
+                        .attr("type", "button")
+                        .attr("class", "btn btn-success")
+                        .attr("value", "Submit");
+                      questionNumber += 1;
+                    </script>
+                    <!-- <p>Governments tax the rich and subsidize the poor.</p>
+                    <form action="/action_page.php">
+                        <div class="radio">
+                            <label><input type="radio" name="q1">1 - Not an essential characteristic of democracy</label>
+                        </div>
+                        <div class="radio">
+                            <label><input type="radio" name="q1">2</label>
+                        </div>
+                        <div class="radio">
+                            <label><input type="radio" name="q1">3</label>
+                        </div>
+                        <div class="radio">
+                            <label><input type="radio" name="q1">4</label>
+                        </div>
+                        <div class="radio">
+                            <label><input type="radio" name="q1">5</label>
+                        </div>
+                        <div class="radio">
+                            <label><input type="radio" name="q1">6</label>
+                        </div>
+                        <div class="radio">
+                            <label><input type="radio" name="q1">7</label>
+                        </div>
+                        <div class="radio">
+                            <label><input type="radio" name="q1">8</label>
+                        </div>
+                        <div class="radio">
+                            <label><input type="radio" name="q1">9</label>
+                        </div>
+                        <div class="radio">
+                            <label><input type="radio" name="q1">10 - An essential characteristic of democracy</label>
+                        </div></br> -->
+                        <!-- <input type="button" class="btn btn-success" value="Submit"> -->
+                    </form>
+                </div>
+            </div>
+      </div>
+    </body>
+</html>
